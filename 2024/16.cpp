@@ -41,7 +41,7 @@ int64_t dijkstra(int sy, int sx) {
 	return -1;
 }
 
-int64_t dfs(int ey, int ex, int64_t sc) {
+int64_t bfs(int ey, int ex, int64_t sc) {
 	vector<vector<int8_t>> vis(m.size(), vector<int8_t>(m[0].size(), 0));
 	int64_t res = 0;
 	queue<Pos> q;
@@ -78,6 +78,6 @@ int main() {
 	assert(sy != -1 && sx != -1);
 	int64_t ans = dijkstra(sy, sx);
 	cout << ans << '\n';
-	ans = dfs(ey, ex, ans);
+	ans = bfs(ey, ex, ans);
 	cout << ans << '\n';
 }
