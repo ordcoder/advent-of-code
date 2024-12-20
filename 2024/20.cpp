@@ -36,10 +36,9 @@ int main() {
 	assert(t < INT_MAX/4 && t == edist[sy][sx]);
 	int ans = 0;
 	for (int y = 0; y < int(m.size()); ++y) for (int x = 0; x <int(m[y].size()); ++x) {
-		for (int d0 = 0; d0 < 4; ++d0) for (int d1 = 0; d1 < 4; ++d1) {
-			int ny = y + dy[d0] + dy[d1], nx = x + dx[d0] + dx[d1];
-			if (ny < 0 || ny >= int(m.size()) || nx < 0 || nx >= int(m[ny].size())) continue;
-			int nt = sdist[y][x] + 2 + edist[ny][nx];
+		for (int ny = max(0, y - 20); ny < min(int(m.size()), y + 21); ++ny)
+		for (int nx = max(0, x - 20 + abs(ny - y)); nx < min(int(m[ny].size()), x + 21 - abs(ny - y)); ++nx) {
+			int nt = sdist[y][x] + abs(ny - y) + abs(nx - x) + edist[ny][nx];
 			if (nt + 100 <= t) ++ans;
 		}
 	}
