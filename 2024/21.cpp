@@ -1,100 +1,49 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const char *key2[8][3] = {
-	{"v<<A>>^", "v<A<A>>^", "vAA^<A>A"}, // ul
-	{"v<A>^", "<Av<A>>^", "vA^A"}, // ru
-	{"v<A>^", "v<<A>>^", "vA^<A>A"}, // rd
-	{"v<A<A>>^", "v<<A>>^", "vAA^<A>A"}, // dl
-	{"v<A<AA>>^", "vA^<A>", "vA^A"}, // lu?
-	{"v<<a>>^", "vA<A>^", "<A>A"}, // ur=
-	{"v<A<A>>^", "vA^", "<A>A"}, // dr?
-	{"v<A<AA>>^", "vA^", "vA^<A>A"}, // ld?
-};
-const char *lin2[4][2] = {
-	{"v<<A>>^", "vA^A"}, // u
-	{"v<A>^", "<A>A"}, // r
-	{"v<A<A>>^", "vA^<A>A"}, // d
-	{"v<A<AA>>^", "vAA^<A>A"}, // l
-};
-
-int y, x, yk1, xk1, yk0, xk0, slen;
-string out;
-
-void interp(char c, int ri, int &ry, int &rx) {
-	switch (c) {
-	case 'A': if (ri == 2) {
-		out.push_back("789456123 0A"[3*ry+rx]);
-	} else {
-		interp(" ^A<v>"[3*ry+rx], ri+1, (ri ? y : yk1), (ri ? x : xk1));
-	}; break;
-	case '^': --ry; break;
-	case '<': --rx; break;
-	case 'v': ++ry; break;
-	case '>': ++rx; break;
-	default: assert(!"bad cmd");
-	}
-	assert(0 <= ry && ry < (ri == 2 ? 4 : 2));
-	assert(0 <= rx && rx < 3);
-}
-
-void emit(char c, int cnt) {
-	while (cnt --> 0) {
-		cerr << c;
-		++slen;
-		interp(c, 0, yk0, xk0);
-	}
-}
-void emit(const char *s) {
-	while (*s) emit(*s++, 1);
-}
-void emit(const char *(&ar)[2], int c) {
-	emit(ar[0]); emit('A', c); emit(ar[1]);
-}
-void emit(const char *(&ar)[3], int c0, int c1) {
-	emit(ar[0]); emit('A', c0); emit(ar[1]); emit('A', c1); emit(ar[2]);
-}
+struct Cost { int64_t gul, u, gur, r, gdr, d, gdl, l, ul, ru, rd, dl; } cost[26];
 
 int main() {
+	cost[0] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	for (int i = 1; i < 26; ++i) {
+		cost[i].u = cost[i-1].l + cost[i-1].r + 2;
+		cost[i].r = cost[i-1].d + cost[i-1].u + 2;
+		cost[i].d = cost[i-1].gdl + cost[i-1].gur + 4;
+		cost[i].l = cost[i-1].dl + cost[i-1].ru + 6;
+		cost[i].ul = cost[i-1].l + cost[i-1].dl + cost[i-1].ru + 6;
+		cost[i].ru = cost[i-1].d + cost[i-1].gul + cost[i-1].r + 4;
+		cost[i].rd = cost[i-1].d + cost[i-1].l + cost[i-1].gur + 4;
+		cost[i].dl = cost[i-1].gdl + cost[i-1].l + cost[i-1].ru + 6;
+		cost[i].gul = min(cost[i].ul, cost[i-1].dl + cost[i-1].ru + cost[i-1].r + 6);
+		cost[i].gur = min(cost[i].ru, cost[i-1].l + cost[i-1].gdr + cost[i-1].u + 4);
+		cost[i].gdr = min(cost[i].rd, cost[i-1].gdl + cost[i-1].r + cost[i-1].u + 4);
+		cost[i].gdl = min(cost[i].dl, cost[i-1].dl + cost[i-1].r + cost[i-1].gur + 6);
+	}
 	string code;
 	int64_t ans = 0;
 	while (cin >> code) {
+		int y = 3, x = 2, icode = -1;
 		istringstream ss(code);
-		int ty, tx, icode = -1;
 		ss >> icode;
-		y = 3; x = 2;
-		yk1 = 0; xk1 = 2;
-		yk0 = 0; xk0 = 2;
-		slen = 0;
-		out.clear();
 		for (char c: code) {
-			if (c >= '1' && c <= '9') {
-				ty = 2 - (c - '1') / 3;
-				tx = (c - '1') % 3;
-			} else if (c == '0') {
-				ty = 3;
-				tx = 1;
-			} else if (c == 'A') {
-				ty = 3;
-				tx = 2;
-			} else assert(!"bad code");
+			const char *keypad = "789456123 0A";
+			int ty = (strchr(keypad, c) - keypad) / 3, tx = (strchr(keypad, c) - keypad) % 3;
+			ans += icode * (abs(ty - y) + abs(tx - x) + 1);
+			const Cost &C = cost[25]; // for pt1: cost[2]
 			if (ty < y) {
-				if (tx < x) (y < 3 || tx > 0) ? emit(key2[4], x - tx, y - ty) : emit(key2[0], y - ty, x - tx);
-				else if (tx > x) emit(key2[1], tx - x, y - ty);
-				else emit(lin2[0], y - ty);
+				if (tx < x) ans += icode * (y < 3 || tx > 0 ? C.gul : C.ul);
+				else if (tx > x) ans += icode * C.gur;
+				else ans += icode * C.u;
 			} else if (ty > y) {
-				if (tx < x) emit(key2[7], x - tx, ty - y);
-				else if (tx > x) (ty < 3 || x > 0) ? emit(key2[6], ty - y, tx - x) : emit(key2[2], tx - x, ty - y);
-				else emit(lin2[2], ty - y);
+				if (tx < x) ans += icode * C.gdl;
+				else if (tx > x) ans += icode * (ty < 3 || x > 0 ? C.gdr : C.rd);
+				else ans += icode * C.d;
 			} else {
-				if (tx < x) emit(lin2[3], x - tx);
-				else if (tx > x) emit(lin2[1], tx - x);
-				else emit('A', 1);
+				if (tx < x) ans += icode * C.l;
+				else if (tx > x) ans += icode * C.r;
 			}
+			tie(y, x) = make_pair(ty, tx);
 		}
-		assert(out == code);
-		cerr << ": " << out << "\n";
-		ans += icode * slen;
 	}
 	cout << ans << '\n';
 }
