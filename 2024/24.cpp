@@ -38,4 +38,9 @@ int main() {
 	uint64_t ans = 0, sh = 0;
 	for (auto it = values.lower_bound("z"); it != end(values) && it->first[0] == 'z'; ++it) ans |= uint64_t(it->second.val) << sh++;
 	cout << ans << '\n';
+	// gate swaps found by hand
+	vector<string> swaps{"hnd", "z09", "tdv", "z16", "bks", "z23", "nrn", "tjp"};
+	sort(begin(swaps), end(swaps));
+	for (const auto &s: swaps) cout << s << ',';
+	cout << '\n';
 }
