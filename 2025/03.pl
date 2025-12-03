@@ -3,9 +3,12 @@ use v5.42;
 use List::Util qw(maxstr);
 my $sum = 0;
 for (<>) {
-	my $m = maxstr split //, substr($_, 0, -2);
-	my $i = index $_, $m;
-	my $n = maxstr split //, substr($_, $i+1, -1);
-	$sum += $m . $n;
+	my ($jolt, $o) = ("", 0);
+	for (my $i = 0; $i < 12; ++$i) {
+		my $m = maxstr split //, substr($_, $o, $i-12);
+		$jolt .= $m;
+		$o = 1 + index $_, $m, $o;
+	}
+	$sum += $jolt;
 }
 say $sum;
