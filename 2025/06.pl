@@ -1,18 +1,21 @@
 #!/usr/bin/perl
 use v5.42;
-my ($sum, @parts);
-push @parts, [split] while (<>);
-for (my $i = 0; $i < @{$parts[-1]}; ++$i) {
-	my $r = $parts[0][$i];
-	if ($parts[-1][$i] eq "+") {
-		for (my $j = 1; $j < @parts - 1; ++$j) {
-			$r += $parts[$j][$i];
-		}
-	} elsif ($parts[-1][$i] eq "*") {
-		for (my $j = 1; $j < @parts - 1; ++$j) {
-			$r *= $parts[$j][$i];
-		}
+use List::Util qw(sum0 product);
+my ($sum, $op, @args, @parts);
+push @parts, [split //] while (<>);
+my @ops = @{pop @parts};
+for (my $i = 0; $i < @ops; ++$i) {
+	local $_ = join "", map $_->[$i], @parts;
+	if (/^\s+$/) {
+		$sum += $op->(@args);
+		@args = ();
+	} else {
+		push @args, $_;
 	}
-	$sum += $r;
+	if ($ops[$i] eq "+") {
+		$op = \&sum0;
+	} elsif ($ops[$i] eq "*") {
+		$op = \&product;
+	}
 }
 say $sum;
