@@ -1,14 +1,14 @@
 #!/usr/bin/perl
 use v5.42;
-my ($c, %t);
+use List::Util qw(sum0);
+my %t;
 while (<>) {
-	my $ind = index $_, "S";
-	$t{$ind} = 1 if $ind >= 0;
+	$t{index $_, "S"} = 1 if $. == 1;
 	for my $t (keys %t) {
 		next unless substr($_, $t, 1) eq "^";
-		++$c;
-		$t{$t-1} = $t{$t+1} = 1;
+		$t{$t-1} += $t{$t};
+		$t{$t+1} += $t{$t};
 		delete $t{$t};
 	}
 }
-say $c;
+say sum0 values %t;
