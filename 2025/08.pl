@@ -1,6 +1,5 @@
 #!/usr/bin/perl
 use v5.42;
-use List::Util qw(product);
 my (@xyz, @p, @par, @sz);
 push @xyz, [split /,/] while (<>);
 for (my $i = 0; $i < @xyz; ++$i) {
@@ -11,12 +10,9 @@ for (my $i = 0; $i < @xyz; ++$i) {
 	push @sz, 1;
 }
 @p = sort {$a->[2] <=> $b->[2]} @p;
-my $lim = @xyz == 20 ? 10 : 1000;
-for (my $i = 0; $i < $lim; ++$i) {
-	merge(@{$p[$i]});
-}
-@sz = sort {$b <=> $a} @sz;
-say product(@sz[0 .. 2]);
+$_ = 0;
+++$_ while not merge(@{$p[$_]});
+say $xyz[$p[$_][0]][0] * $xyz[$p[$_][1]][0];
 
 sub dist2 {
 	my ($i, $j) = @_;
@@ -29,7 +25,7 @@ sub merge {
 	return if $i == $j;
 	$par[$i] = $j;
 	$sz[$j] += $sz[$i];
-	$sz[$i] = 1;
+	return $sz[$j] == @xyz;
 }
 
 sub getpar {
