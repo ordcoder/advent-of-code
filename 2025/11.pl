@@ -20,8 +20,9 @@ while (@q) {
 		push @q, $_ unless %{$back{$_}};
 	}
 }
-my %cnt = (you => 1);
+my %cnt = (svr => 1);
 for my $x (@top) {
+	%cnt = ($x => $cnt{$x}) if $x =~ /^(dac|fft)$/;
 	$cnt{$_} += $cnt{$x} // 0 for @{$forw{$x}};
 }
 say $cnt{out};
